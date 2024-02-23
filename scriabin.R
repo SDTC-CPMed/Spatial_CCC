@@ -10,7 +10,7 @@ library(dplyr)
 
 #https://www.nature.com/articles/s41587-023-01782-z
 #https://github.com/BlishLab/scriabin
-
+#https://drive.google.com/drive/folders/1dkGF4kKMbHSm04DKHg6P_y_iTD1pXCH8
 
 ############ Basic processing of Spatial data ###########
 
@@ -31,7 +31,6 @@ p1
 p2
 p3
 
-seurat_ALRA <- SeuratWrappers::RunALRA(seurat)
 
 
 
@@ -44,10 +43,10 @@ seurat_ALRA <- SeuratWrappers::RunALRA(seurat)
 # the senders and receivers would be somewhat consistent within
 # different cell types
 
+seurat_ALRA <- SeuratWrappers::RunALRA(seurat)
 scriabin::load_nichenet_database()
 
-soi <- 1 #sender of interest
-roi <- 2 #receiver of interest
+
 
 
 variant_genes <- IDVariantGenes(seurat_ALRA, assay = "alra", group.by = "seurat_clusters")
@@ -55,16 +54,44 @@ seurat_ALRA@assays$data <- seurat_ALRA@assays$alra #Fixing the new version of pa
 gene_signature <- GenerateCellSignature(seurat_ALRA, variant_genes = variant_genes)
 active_ligands <- RankActiveLigands(seurat_ALRA, assay = "data", signature_matrix = gene_signature)
 
+
+
+i = 1 #case which has all neighbours around 
+i = 56 #case which is on the edge
+i = 3559 #case that is alone
+N = dim(seurat@images$slice1@coordinates)[1] #This many spots we have
+
+cell = seurat@images$slice1@coordinates[i,]
+interaction = array('non-relevant', dim = dim(seurat@images$slice1@coordinates)[1])
+
+receiver_idx = abs(cell$row - seurat@images$slice1@coordinates$row) <= 1 &
+           abs(cell$col - seurat@images$slice1@coordinates$col) <= 2
+
+
+interaction[receiver_idx] = 'receiver'
+interaction[i] = 'sender'
+  
+  
+seurat_ALRA[['interaction']] = as.factor(interaction)
+  
+SpatialDimPlot(seurat_ALRA, group.by = 'interaction')
+  
+  
+soi <- 'sender' #sender of interest
+roi <- 'receiver' #receiver of interest
 TopLigandsByIdent(seurat_ALRA, assay = 'data', active_ligands = active_ligands, 
-                  sender = soi, receiver = roi, group.by = "seurat_clusters")
-
-
-receiver_cells <- colnames(seurat_ALRA)[seurat_ALRA$seurat_clusters==roi]
-
-# calculates the predicted target genes within a set of receiver cells 
+                  sender = soi, receiver = roi, group.by = "interaction")
+  
+  
+receiver_cells <- colnames(seurat_ALRA)[seurat_ALRA$interaction==roi]
+  
+  # calculates the predicted target genes within a set of receiver cells 
 PlotLigandTargetAlluvium(seurat_ALRA, signature_matrix = gene_signature,
-                         active_ligands = active_ligands, receiver_cells = receiver_cells,
-                         ligands_of_interest = c("WNT7A", "WNT7B"))
+                          active_ligands = active_ligands, receiver_cells = receiver_cells,
+                          ligands_of_interest = c("TGFB1", "IFNG"))
+
+
+
 
 
 
@@ -128,7 +155,7 @@ poi_receptor_score = poi_receptor_score %>% filter(rownames(poi_receptor_score) 
 Programs[['poi_receptor_score']] = as.numeric(unlist(poi_receptor_score))
 p2 = SpatialFeaturePlot(Programs, features  = 'poi_receptor_score')
 p1+p2
-
+p2
 moi <- reshape2::melt(Programs_sig %>% dplyr::filter(name==poi) %>%
                         select("lr_pair",contains("connectivity"))) %>% arrange(-value)
 moi$lr_pair <- factor(moi$lr_pair, levels = unique(moi$lr_pair))
