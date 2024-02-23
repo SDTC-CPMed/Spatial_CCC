@@ -20,15 +20,16 @@ plot2 <- SpatialFeaturePlot(seurat, features = "nCount_Spatial") + theme(legend.
 wrap_plots(plot1, plot2)
 
 seurat <- SCTransform(seurat, assay = "Spatial", verbose = FALSE)
-
 seurat <- RunPCA(seurat, assay = "SCT", verbose = FALSE)
 seurat <- FindNeighbors(seurat, reduction = "pca", dims = 1:30)
 seurat <- FindClusters(seurat, verbose = FALSE)
 seurat <- RunUMAP(seurat, reduction = "pca", dims = 1:30)
 p1 <- DimPlot(seurat, reduction = "umap", label = TRUE)
 p2 <- SpatialDimPlot(seurat, label = TRUE, label.size = 3)
+p3 <- SpatialFeaturePlot(seurat, features = c("KRT19", "ACTA2", "PTPRC")) # check the cancer cells,CAF and immune cells
 p1
 p2
+p3
 
 seurat_ALRA <- SeuratWrappers::RunALRA(seurat)
 
@@ -69,7 +70,7 @@ PlotLigandTargetAlluvium(seurat_ALRA, signature_matrix = gene_signature,
 
 
 ########## Another tool of Scriabin, not sure how could be used ##############
-
+seed=42
 
 #find interaction programs
 Programs <- FindAllInteractionPrograms(seurat_ALRA, iterate.threshold = 300, group.by = "seurat_clusters",
