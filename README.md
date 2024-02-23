@@ -1,1 +1,11 @@
-# Spatial_CCC
+# Spatial_cell_cell_communication in Cancers - The mighty gang
+
+Try to identify the CCC change in cancer spatial transcriptomic data. First, try two methods in the lung cancer data (Delineating the dynamic evolution from preneoplasia to invasive lung adenocarcinoma by integrating single-cell RNA sequencing and spatial transcriptomics https://www.nature.com/articles/s12276-022-00896-9#Sec2):
+
+Scrabian - Comparative analysis of cell–cell communication at single-cell resolution(https://www.nature.com/articles/s41587-023-01782-z). Designed for scRNA - Martin has the code run nicely, this one might move quicker
+COMMOT - Screening cell–cell communication in spatial transcriptomics via collective optimal transport (https://www.nature.com/articles/s41592-022-01728-4)
+Ideally, we would like have it as a quick project. Find something in the lung cancer paper using the CCC method, then replicate it in multiple different cancer ST datasets
+
+=================== 
+
+Below is Mikael's theory: Here, we hypothesized that the same principle would apply to premalignant cells. We constructed a spatially resolved network of all cells in a tumour. In this network each cell got a number depicting how many cells of the same type were in its vicinity. In other words, a central premalignant cell in a large cluster of premalignant cells got a high number, while a central premalignant cell in a small cluster got a medium number. A single premalignant cell surrounded by stroma and immune cell got a low number. We found that premalignant cells with high numbers were more homogenous and similar to malignant cells than those with low numbers. The high number cells only had stimulatory interactions, while low number cells had multiple mixed interactions. We ranked the stimulatory interactions and their URs. We showed that the top-scoring URs were associated with survival in TCGA, CPTAC and UKBB. Blocking a top UR killed premalignant clusters and tumor development in mice. In summary, the street gang principle applies to premalignant cells: Those with many similar cells in the vicinity successfully outcompete other premalignant cells and become malignant because of friendly support from its neighbours.
