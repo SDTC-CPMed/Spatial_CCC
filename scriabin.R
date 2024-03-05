@@ -1,5 +1,6 @@
 library(Seurat)
 library(SeuratData)
+library(SeuratDisk)
 library(scriabin)
 library(tidyverse)
 library(ComplexHeatmap)
@@ -12,24 +13,39 @@ library(dplyr)
 #https://github.com/BlishLab/scriabin
 #https://drive.google.com/drive/folders/1dkGF4kKMbHSm04DKHg6P_y_iTD1pXCH8
 
-############ Basic processing of Spatial data ###########
+############ Load data and save for use in python ###########
 
-Patient1 = load('data/seurat_ST1.rda')
+load('data/seurat_ST1.rda')
+
+SaveH5Seurat(seurat, filename = "seurat_ST1.h5Seurat")
+Convert("seurat_ST1.h5Seurat", assay = 'Spatial', dest = "h5ad")
+write.table(seurat@images$slice1@coordinates[,1:3], 'data/seurat_ST1_obs.csv')
+write.table(seurat@images$slice1@coordinates[,4:5], 'data/seurat_ST1_obsm.csv')
+write.table(seurat@images$slice1@image[,,1], 'data/seurat_ST1_imageR.csv')
+write.table(seurat@images$slice1@image[,,2], 'data/seurat_ST1_imageG.csv')
+write.table(seurat@images$slice1@image[,,3], 'data/seurat_ST1_imageB.csv')
+write.table(seurat@images$slice1@scale.factors$spot, 'data/seurat_ST1_spot_diameter.csv')
+write.table(seurat@images$slice1@scale.factors$fiducial, 'data/seurat_ST1_fiducial_diameter.csv')
+write.table(seurat@images$slice1@scale.factors$lowres, 'data/seurat_ST1_hires_scalef.csv')
+write.table(seurat@images$slice1@scale.factors$lowres, 'data/seurat_ST1_lowres_scalef.csv')
+
+
+############ Basic processing of Spatial data ###########
 plot1 <- VlnPlot(seurat, features = "nCount_Spatial", pt.size = 0.1) + NoLegend()
 plot2 <- SpatialFeaturePlot(seurat, features = "nCount_Spatial") + theme(legend.position = "right")
 wrap_plots(plot1, plot2)
 
 seurat <- SCTransform(seurat, assay = "Spatial", verbose = FALSE)
+
 seurat <- RunPCA(seurat, assay = "SCT", verbose = FALSE)
 seurat <- FindNeighbors(seurat, reduction = "pca", dims = 1:30)
 seurat <- FindClusters(seurat, verbose = FALSE)
 seurat <- RunUMAP(seurat, reduction = "pca", dims = 1:30)
 p1 <- DimPlot(seurat, reduction = "umap", label = TRUE)
 p2 <- SpatialDimPlot(seurat, label = TRUE, label.size = 3)
-p3 <- SpatialFeaturePlot(seurat, features = c("KRT19", "ACTA2", "PTPRC")) # check the cancer cells,CAF and immune cells
 p1
 p2
-p3
+
 
 
 
@@ -55,49 +71,39 @@ gene_signature <- GenerateCellSignature(seurat_ALRA, variant_genes = variant_gen
 active_ligands <- RankActiveLigands(seurat_ALRA, assay = "data", signature_matrix = gene_signature)
 
 
-
-i = 1 #case which has all neighbours around 
-i = 56 #case which is on the edge
-i = 3559 #case that is alone
-N = dim(seurat@images$slice1@coordinates)[1] #This many spots we have
-
+i = 1
 cell = seurat@images$slice1@coordinates[i,]
 interaction = array('non-relevant', dim = dim(seurat@images$slice1@coordinates)[1])
 
 receiver_idx = abs(cell$row - seurat@images$slice1@coordinates$row) <= 1 &
            abs(cell$col - seurat@images$slice1@coordinates$col) <= 2
 
-
 interaction[receiver_idx] = 'receiver'
 interaction[i] = 'sender'
-  
-  
+
+
 seurat_ALRA[['interaction']] = as.factor(interaction)
-  
-SpatialDimPlot(seurat_ALRA, group.by = 'interaction')
-  
-  
-soi <- 'sender' #sender of interest
-roi <- 'receiver' #receiver of interest
+
+SpatialFeaturePlot(seurat_ALRA, features  = 'interaction')
+
+soi <- 1 #sender of interest
+roi <- 2 #receiver of interest
 TopLigandsByIdent(seurat_ALRA, assay = 'data', active_ligands = active_ligands, 
-                  sender = soi, receiver = roi, group.by = "interaction")
-  
-  
-receiver_cells <- colnames(seurat_ALRA)[seurat_ALRA$interaction==roi]
-  
-  # calculates the predicted target genes within a set of receiver cells 
+                  sender = soi, receiver = roi, group.by = "seurat_clusters")
+
+
+receiver_cells <- colnames(seurat_ALRA)[seurat_ALRA$seurat_clusters==roi]
+
+# calculates the predicted target genes within a set of receiver cells 
 PlotLigandTargetAlluvium(seurat_ALRA, signature_matrix = gene_signature,
-                          active_ligands = active_ligands, receiver_cells = receiver_cells,
-                          ligands_of_interest = c("TGFB1", "IFNG"))
-
-
-
+                         active_ligands = active_ligands, receiver_cells = receiver_cells,
+                         ligands_of_interest = c("WNT7A", "WNT7B"))
 
 
 
 
 ########## Another tool of Scriabin, not sure how could be used ##############
-seed=42
+
 
 #find interaction programs
 Programs <- FindAllInteractionPrograms(seurat_ALRA, iterate.threshold = 300, group.by = "seurat_clusters",
