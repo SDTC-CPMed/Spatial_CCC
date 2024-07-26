@@ -13,6 +13,9 @@ python/h5ad_to_counts.ipynb to save the data in format that can be loaded by Sce
 
 
 2)	We use scevan (https://www.nature.com/articles/s41467-023-36790-9) to find out which spots are normal and which are malignant. In the latter case, we cluster them based on the CNV profile using the same method. 
+Scripts: \
+R/scevan.R to load data saved in python/h5ad_to_counts.ipynb and run scevan  \
+
  
 3)	We use stlearn (https://www.nature.com/articles/s41467-023-43120-6) to compute the pseudotime trajectories from normal spots, through different stages (CNV clusters) of cancer, to the most malignant spots and we find the genes that are the most associated with these trajectories.
  
