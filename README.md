@@ -5,21 +5,21 @@ Aim: We want to use spatial scRNA to understand the development (driving genes a
 Background: It is believed that the cancer starts by a collection of unfortunate mutations in key cell mechanisms (for example they start multiplying way more, they don’t want to do apoptosis (kill themselves) when instructed by other cells and so on..). We are interested if and how are these mutations (copy number variants - CNVs) related to gene expression and mainly different biological mechanisms. To do that, we use spatial scRNA data. Main difference between scRNA and spatial is that we know the exact position of the spots, which is great, but instead of single cells, we measure RNA in spots which usually consist of 5-20 cells depending on the method.
 
 Plan: 
-1)	We start with the hest ([2406.16192v1] HEST-1k: A Dataset for Spatial Transcriptomics and Histology Image Analysis (arxiv.org)) database and focus on prostate cancer. This is a database that collects spatial scRNA data from multiple other papers. Pros: It is a lot of data which are structure in the same way. Cons: We only have basic information about the samples (e.g. we are missing study specific annotation (if the cell is malignant or not, what is a stage of cancer, what kind of cell type)) 
-Scripts: \n
-python/HEST.ipynb to download data from HEST database \n
-python/h5ad_to_counts.ipynb to save the data in format that can be loaded by Scevan
+1)	We start with the hest (https://github.com/mahmoodlab/HEST) database and focus on prostate cancer. This is a database that collects spatial scRNA data from multiple other papers. Pros: It is a lot of data which are structure in the same way. Cons: We only have basic information about the samples (e.g. we are missing study specific annotation (if the cell is malignant or not, what is a stage of cancer, what kind of cell type)) \
+Scripts: \
+python/HEST.ipynb to download data from HEST database \
+python/h5ad_to_counts.ipynb to save the data in format that can be loaded by Scevan \
 
 
 
-2)	We use scevan (https://www.nature.com/articles/s41467-023-36790-9) to find out which spots are normal and which are malignant. In the latter case, we cluster them based on the CNV profile using the same method. Below is shown an example output for one slide. 0 means normal cell, the other clusters correspond to different malignant CNV profiles. 
+2)	We use scevan (https://www.nature.com/articles/s41467-023-36790-9) to find out which spots are normal and which are malignant. In the latter case, we cluster them based on the CNV profile using the same method. 
  
 3)	We use stlearn (https://www.nature.com/articles/s41467-023-43120-6) to compute the pseudotime trajectories from normal spots, through different stages (CNV clusters) of cancer, to the most malignant spots and we find the genes that are the most associated with these trajectories.
  
-An example of pseudotime for the same slide. You can see that the normal spots have low pseudotime while the malignant spots correspond to later pseudotime.
+
 4)	We use gseapy (https://academic.oup.com/bioinformatics/article/39/1/btac757/6847088) to infer biological mechanisms based on the 
  
-An example of pathway enrichment, where we try to get the pathways (biological mechanisms) that correspond to the genes associated with the trajectories from 3.
+
 5)	The next steps would be to do this on multiple datasets, find some shared biological mechanisms and try to validate it in other datasets.
 
 
