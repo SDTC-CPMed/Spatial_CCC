@@ -2,6 +2,16 @@
 library(semla)
 library(Seurat)
 
+# Function to adapt images to the correct format
+adjust_image <- function(se){
+  st <- GetStaffli(se)
+  new_h <- st@image_info$full_width
+  st@image_info$full_width <- st@image_info$full_height
+  st@image_info$full_height <- new_h
+  se@tools$Staffli = st
+  return(se)
+}
+
 # path and file name to the RData object
 data_path <- "/Spatial_CCC/DATA/"
 file_name <- "seurat_st_NCBI569"
@@ -20,8 +30,9 @@ save(se, file=paste0(data_path,file_name,"_2.RData"))
 
 # Same code but used when we have previously annotated and saved a part of the object
 load(paste0(data_path,file_name,"_2.RData"))
-se<- UpdateSeuratForSemla(se)
+se <- UpdateSeuratForSemla(se)
 se <- LoadImages(se)
+se <- adjust_image(se)
 se <- FeatureViewer(se)
 save(se, file=paste0(data_path,file_name,"_3.RData"))
 
