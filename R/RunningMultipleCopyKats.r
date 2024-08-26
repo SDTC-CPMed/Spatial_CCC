@@ -164,8 +164,6 @@ run_one_copykat <- function(test_number,
         CNVsData$positmeans <- apply(matrix_results, 1, function(x) mean(x[x >= 0], na.rm = TRUE))
         CNVsData$negativemeans <- apply(matrix_results, 1, function(x) mean(x[x < 0], na.rm = TRUE))
         
-        write.csv(CNVsData, paste(sample_slice, '_', beta, '_CNV_CopyKatWithRef',test_number,'.csv', sep = ''))
-        
         BigCNV <- cbind(CNVsData,matrix_results)
         
         CNVbyClassGroup2 <- BigCNV %>%
@@ -175,6 +173,17 @@ run_one_copykat <- function(test_number,
         distances_centroids <- rowMeans(CNVbyClassGroup2^2)
         orderClusters <- order(distances_centroids)
         df_order <- data.frame(orderClusters,distances_centroids[orderClusters])
+        
+        un <- unique(CNVsData[CNVsData$class=="Normal","subclone"])
+        CNVsData$isBest = FALSE
+        for(val in orderClusters){
+          if(val %in% un){
+            CNVsData[CNVsData$subclone == val,"isBest"] = TRUE
+            break
+          }
+        }
+        
+        write.csv(CNVsData, paste(sample_slice, '_', beta, '_CNV_CopyKatWithRef',test_number,'.csv', sep = ''))
         write.csv(df_order, paste(sample_slice, '_', beta, '_CNV_OrderClusters',test_number,'.csv', sep = ''))
       })
     }
