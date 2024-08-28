@@ -31,9 +31,10 @@ run_one_copykat <- function(test_number,
                             sample_slices_vector = c('MEND160'),
                             path = "/Documents/DATA/", 
                             copykat_distance = "euclidean", # "euclidean" # "pearson" # "spearman"
-                            reference_option = "None", # "None" # "Normal" # "GG4" # "path"
+                            reference_option = "None", # "None" # "Normal" # "GG4" # "MEND156" # "allBenignRdata" # "stroma"
                             reference_path = "",
-                            adata_option = "epi",
+                            rdata_file_name = "",
+                            adata_option = "epi", # "se" # "everything"
                             ngene_perchr = 5,
                             copykat_ks = 0.1,
                             copykat_ws = 25,
@@ -93,6 +94,9 @@ run_one_copykat <- function(test_number,
         slice_name2 <- '^H2_5_'
         reference_benign_cells <- benign_cells[benign_cells$IsReference == "True",]
         reference_benign_cells <- sub(slice_name2, "", reference_benign_cells$V1)        
+      }else if(reference_option == "allBenignRdata"){
+        load(paste0(path,rdata_file_name,".RData"))
+        reference_benign_cells <- se@meta.data[se@meta.data$Label %in% c("Benign"),"Barcode"]
       }else{
         reference_file = '_Reference.csv'
         benign_cells <- read.csv(paste(path,sample_slice,reference_file,sep=""))
@@ -113,18 +117,27 @@ run_one_copykat <- function(test_number,
       
       adata <- read.csv(paste(path,sample_slice, '.csv', sep = ''), header = TRUE, row.names = 'X')
       adata <- adata[epi_cells,]
+      
+      # transpose
+      t_adata <- transpose(adata)
+      
+      # get row and colnames in order
+      colnames(t_adata) <- rownames(adata)
+      rownames(t_adata) <- colnames(adata)
+    }else if (adata_option == "se"){
+      raw_counts <- se@assays$Spatial@counts
+      # If you want to convert it to a regular matrix
+      t_adata <- as.matrix(raw_counts)
+      
     }else if(adata_option == "everything"){
       adata <- read.csv(paste(path,sample_slice, '.csv', sep = ''), header = TRUE, row.names = 'X')
-    }
-    
-    
-    
     # transpose
     t_adata <- transpose(adata)
     
     # get row and colnames in order
     colnames(t_adata) <- rownames(adata)
     rownames(t_adata) <- colnames(adata)
+    }
     
     for(beta in c(1)){
       print(beta)
@@ -205,23 +218,14 @@ library(tidyr)
 library(ggplot2)
 
 # Running copykat
-run_one_copykat(test_number = 80,
+run_one_copykat(test_number = 85,
                 different_folder = FALSE,
-                sample_slices_vector = c('MEND161'),
-                ngene_perchr = 15,
+                sample_slices_vector = c('MEND160'),
+                ngene_perchr = 5,
                 copykat_distance = "pearson",
-                reference_option = "Normal",
-                adata_option = "epi",
-                copykat_lowdr = 0.08,
-                subClusters = 6)
-
-run_one_copykat(test_number = 81,
-                different_folder = FALSE,
-                sample_slices_vector = c('MEND161'),
-                ngene_perchr = 15,
-                copykat_distance = "pearson",
-                reference_option = "Normal",
-                adata_option = "epi",
+                reference_option = "allBenignRdata",
+                rdata_file_name = "seurat_st_H1_4_annotated2",
+                adata_option = "se",
                 copykat_lowdr = 0.08,
                 subClusters = 6)
 
