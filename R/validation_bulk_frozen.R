@@ -12,6 +12,14 @@ library(ggpubr)
 library(DHARMa)
 
 
+# Data from this paper:
+#https://www.nature.com/articles/s41467-021-26840-5
+# Can be downloaded from here:
+#https://zenodo.org/records/5546618
+
+
+#------------------ preprocessing -----------------------------
+
 pcatlas = read.table('data/pcatlas_dataset_vst_normalized.txt')
 pcatlas_annotation = read_excel('data/pcatlas_dataset_annotations.xlsx')
 
