@@ -29,17 +29,18 @@ installation_options <- function(install_copyKat = FALSE, install_devtools = FAL
 run_one_copykat <- function(test_number,
                             different_folder = TRUE,
                             sample_slices_vector = c('MEND160'),
-                            path = "/Documents/DATA/", 
+                            path = "/home/dandia/Documents/DATA/", 
                             copykat_distance = "euclidean", # "euclidean" # "pearson" # "spearman"
-                            reference_option = "None", # "None" # "Normal" # "GG4" # "MEND156" # "allBenignRdata" # "stroma"
+                            reference_option = "None",
                             reference_path = "",
                             rdata_file_name = "",
-                            adata_option = "epi", # "se" # "everything"
+                            adata_option = "epi",
                             ngene_perchr = 5,
                             copykat_ks = 0.1,
                             copykat_ws = 25,
                             copykat_lowdr = 0.05,
                             copykat_cores = 50,
+                            min_gene_per_cell = 200,
                             subClusters = 6){
   
   if(different_folder){
@@ -75,7 +76,7 @@ run_one_copykat <- function(test_number,
     
     if(reference_option != "None"){
       if(reference_option == "copykat"){
-        benign_cells <- read.csv("/Documents/CopyKatReferenceCells.csv")
+        benign_cells <- read.csv("/home/dandia/Documents/CopyKatReferenceCells.csv")
         reference_benign_cells <- benign_cells[benign_cells$copykat.pred == "diploid",]
         reference_benign_cells <- reference_benign_cells$cell.names
       }else if(reference_option == "GG4"){
@@ -93,9 +94,9 @@ run_one_copykat <- function(test_number,
         benign_cells <- read.csv(paste(path,reference_option,reference_file,sep=""))
         slice_name2 <- '^H2_5_'
         reference_benign_cells <- benign_cells[benign_cells$IsReference == "True",]
-        reference_benign_cells <- sub(slice_name2, "", reference_benign_cells$V1)        
+        reference_benign_cells <- sub(slice_name2, "", reference_benign_cells$V1)
       }else if(reference_option == "allBenignRdata"){
-        load(paste0(path,rdata_file_name,".RData"))
+        load(paste0(path,rdata_file_name))
         reference_benign_cells <- se@meta.data[se@meta.data$Label %in% c("Benign"),"Barcode"]
       }else{
         reference_file = '_Reference.csv'
@@ -109,7 +110,7 @@ run_one_copykat <- function(test_number,
     
     if(adata_option == "epi"){
       groupCells = read.csv(paste(path,'groupFiles.txt',sep=""), sep = '\t', header = FALSE)
-      epi_cells = groupCells[groupCells$V2 %in% c('Benign', 'Benign*', 'GG1', 'GG4', 'GG2',
+      epi_cells = groupCells[groupCells$V2 %in% c('Benign', 'Benign*', 'GG1', 'GG4', 'GG2','GG4cribriform',
                                                   'GG4 Cribriform', 'PIN', 'Transition_State'),]
       epi_cells <- epi_cells[grepl(slice_name, epi_cells$V1), ]
       epi_cells <- sub(slice_name, "", epi_cells$V1)
@@ -129,14 +130,41 @@ run_one_copykat <- function(test_number,
       # If you want to convert it to a regular matrix
       t_adata <- as.matrix(raw_counts)
       
+    }else if(adata_option == "seNoStroma"){
+      if(sample_slices_vector %in% c("MEND156","MEND158","MEND160")){ # These files had a different structure
+        raw_counts <- se@assays$Spatial@counts
+        t_adata <- as.matrix(raw_counts)
+      }else{
+        raw_counts <- se@assays$Spatial@layers$counts
+        t_adata <- as.matrix(raw_counts)
+        colnames(t_adata) <- se@meta.data$Barcode
+        rownames(t_adata) <- se@assays$FeaturesNames
+      }
+      t_adata <- t_adata[, se@meta.data$Label %in% c('Benign', 'PIN', 'GG1', 'GG2', 'GG3', 'GG4','GG4cribriform',
+                                                     'GG4 Cribriform', 'PIN', 'Transition_State')]
+    }else if (adata_option == "seLayers"){
+      raw_counts <- se@assays$Spatial@layers$counts
+      # If you want to convert it to a regular matrix
+      t_adata <- as.matrix(raw_counts)
+      colnames(t_adata) <- se@meta.data$Barcode
+      rownames(t_adata) <- se@assays$FeaturesNames
+    }else if(adata_option == "seLayersNoStroma"){
+      raw_counts <- se@assays$Spatial@layers$counts
+      # If you want to convert it to a regular matrix
+      t_adata <- as.matrix(raw_counts)
+      colnames(t_adata) <- se@meta.data$Barcode
+      rownames(t_adata) <- se@assays$FeaturesNames
+      
+      t_adata <- t_adata[, se@meta.data$Label %in% c('Benign', 'PIN', 'GG1', 'GG2', 'GG3', 'GG4','GG4cribriform',
+                                                     'GG4 Cribriform', 'Transition_State')]
     }else if(adata_option == "everything"){
       adata <- read.csv(paste(path,sample_slice, '.csv', sep = ''), header = TRUE, row.names = 'X')
-    # transpose
-    t_adata <- transpose(adata)
-    
-    # get row and colnames in order
-    colnames(t_adata) <- rownames(adata)
-    rownames(t_adata) <- colnames(adata)
+      # transpose
+      t_adata <- transpose(adata)
+      
+      # get row and colnames in order
+      colnames(t_adata) <- rownames(adata)
+      rownames(t_adata) <- colnames(adata)
     }
     
     for(beta in c(1)){
@@ -149,9 +177,13 @@ run_one_copykat <- function(test_number,
                            KS.cut = copykat_ks,
                            win.size = copykat_ws,
                            LOW.DR= copykat_lowdr,
-                           n.cores = 50) # Omica has 72
+                           min.gene.per.cell = min_gene_per_cell,
+                           n.cores = 50)
         hc <- results$hclustering
         
+        print(results)
+        print(hc)
+        print(results$CNAmat)
         
         CNVsData <- data.frame("class" = NaN, 
                                "subclone" = cutree(hc, k = subClusters))
@@ -170,6 +202,10 @@ run_one_copykat <- function(test_number,
         
         matrix_results <- t(results$CNAmat[,4:length(results$CNAmat)])
         rownames(matrix_results) <- allnames
+        
+        CNVsMatrix = t(results$CNAmat)
+        rownames(CNVsMatrix)[4:length(results$CNAmat)] <- allnames # hasn't run like this yet
+        write.csv(CNVsMatrix, paste(sample_slice, '_', beta, '_CNVsMatrix',test_number,'.csv', sep = ''))
         
         CNVsData$means <- rowMeans(matrix_results)
         CNVsData$mins <- apply(matrix_results, 1, min)
@@ -196,8 +232,8 @@ run_one_copykat <- function(test_number,
           }
         }
         
-        write.csv(CNVsData, paste(sample_slice, '_', beta, '_CNV_CopyKatWithRef',test_number,'.csv', sep = ''))
-        write.csv(df_order, paste(sample_slice, '_', beta, '_CNV_OrderClusters',test_number,'.csv', sep = ''))
+        write.csv(CNVsData, paste(strsplit(rdata_file_name,".",fixed=TRUE)[[1]][1], '_', beta, '_CNV_NewAnnotations',test_number,'.csv', sep = ''))
+        write.csv(df_order, paste(strsplit(rdata_file_name,".",fixed=TRUE)[[1]][1], '_', beta, '_CNV_OrderNewAnnotations',test_number,'.csv', sep = ''))
       })
     }
   }
@@ -216,16 +252,17 @@ library(data.table)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(Seurat)
 
-# Running copykat
-run_one_copykat(test_number = 85,
+# Example of how to run copykat with parameter selection that we chose
+run_one_copykat(test_number = 26,
                 different_folder = FALSE,
-                sample_slices_vector = c('MEND160'),
+                sample_slices_vector = c('TENX46'),
                 ngene_perchr = 5,
                 copykat_distance = "pearson",
                 reference_option = "allBenignRdata",
-                rdata_file_name = "seurat_st_H1_4_annotated2",
-                adata_option = "se",
+                rdata_file_name = "TENX46_annotated2.rdata",
+                adata_option = "seNoStroma",
                 copykat_lowdr = 0.08,
                 subClusters = 6)
 
