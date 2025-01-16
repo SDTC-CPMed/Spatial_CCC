@@ -13,25 +13,18 @@ library(patchwork)
 
 ###########################################
 data_path = "C:/Users/dandia/OneDrive - Karolinska Institutet/Documents/Github/Spatial_CCC/DATA/"
-file_name = "dge_pca.rds"
-
-dge_pca <- readRDS(paste0(data_path,file_name))
-dge_pca@images <- list()
-
-data_path = "C:/Users/dandia/OneDrive - Karolinska Institutet/Documents/Github/Spatial_CCC/DATA/"
 file_name = "dge_E.rds"
 
 dge <- readRDS(paste0(data_path,file_name))
-# dge_pca <- NormalizeData(dge_pca)
 
-all_features <- rownames(dge_pca)
+all_features <- rownames(dge)
 
-features <- c('TMEFF2', 'SPON2', 'CRISP3', 'TRGC1', 'MYO6', 'STEAP2', 'RPS8', 'RPS4X',
-              'EEF1G', 'KLK3', 'NPY', 'KLK2','IGKC', 'MT2A', 'NEFH',
-              'LGALS1', 'HLA-E', 'C1R', 'HLA-A', 'HLA-DRA', 'IGFBP7', 'DES', 'COL1A2',
-              'LGALS3BP', 'HSPB1', 'GSTP1', 'AZGP1', 'IFITM3', 'TAGLN', 'ACTG2',
-              'B2M', 'FLNA', 'MYL9', 'CD74', 'TPM2', 'ACTA2', 'S100A6', 'MSMB',
-              'TIMP1')
+features <- c('TMEFF2', 'SPON2', 'TRGC1', 'RPS8', 'RPS4X', 'CRISP3', 'AMACR', 'MYO6',
+              'STEAP2', 'RPL7A', 'RPS12', 'RPL14', 'RPS27A', 'EEF1G', 'KLK3', 'NPY',
+              'KLK2', 'IGKC', 'MT2A', 'LGALS1', 'NEFH', 'C1R', 'HLA-E', 'HLA-DRA',
+              'DES', 'IGFBP7', 'COL1A2', 'LGALS3BP', 'HSPB1', 'AZGP1', 'GSTP1',
+              'PTGDS', 'HLA-A', 'TAGLN', 'ACTG2', 'B2M', 'FLNA', 'MYL9', 'IFITM3',
+              'CD74', 'TPM2', 'ACTA2', 'TIMP1', 'S100A6', 'MSMB')
 
 features <- features[features %in% all_features]
 
