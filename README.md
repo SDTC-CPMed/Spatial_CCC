@@ -1,48 +1,10 @@
-# Current strategy:
+# Combining spatial  transcriptomics, pseudotime and machine learning to find biomarkers for prostate cancer
 
-Aim: We want to use spatial scRNA to understand the development (driving genes and mechanisms) of the cancer. 
+## Abstract 
+Early cancer diagnosis is crucial but challenging due to a lack of reliable biomarkers that can be measured with routine clinical methods. Identification of such biomarkers is complicated by each tumor involving changed interactions between thousands of genes. On top of this staggering complexity, those interactions can vary among patients with the same diagnosis, as well as within the same tumor. We hypothesized that reliable biomarkers that can be measured with routine methods could be identified by exploiting three facts: (1) The same tumor can have multiple grades of malignant transformation; (2) these grades, and their molecular changes, can be characterized using spatial transcriptomics; and (3) those changes can be integrated into models of malignant transformation using pseudotime. We constructed such pseudotime models based on spatial transcriptomics data from three independent prostate cancer studies, to prioritize the genes most correlated with malignant transformation. In support of the relevance of those genes, they were associated with cancer grade, copy number aberrations, cancer hallmark pathways and drug targets. We therefore hypothesized that these genes would encode candidate biomarkers for prostate cancer. Our hypothesis was supported by analyses of mRNA, immunohistochemistry and proteomics data from sera, prostate tissue and urine from more than 2000 patients with prostate cancer and controls. 
 
-Background: It is believed that the cancer starts by a collection of unfortunate mutations in key cell mechanisms (for example they start multiplying way more, they don’t want to do apoptosis (kill themselves) when instructed by other cells and so on..). We are interested if and how are these mutations (copy number variants - CNVs) related to gene expression and mainly different biological mechanisms. To do that, we use spatial scRNA data. Main difference between scRNA and spatial is that we know the exact position of the spots, which is great, but instead of single cells, we measure RNA in spots which usually consist of 5-20 cells depending on the method.
+Using machine learning we demonstrated that prediction models based on the protein levels of the candidate biomarkers in urine had an AUC of 0.94 for prostate cancer, and that these proteins were associated with cancer grade. To our knowledge, combining spatial transcriptomics, pseudotime and machine learning is a novel approach to systematically identify biomarkers. We propose prospective studies to test the diagnostic potential of the biomarkers in prostate cancer, as well as the analytical strategy in other cancers.
 
-Plan: 
-1)	We start with the hest (https://github.com/mahmoodlab/HEST) database and focus on prostate cancer. This is a database that collects spatial scRNA data from multiple other papers. Pros: It is a lot of data which are structure in the same way. Cons: We only have basic information about the samples (e.g. we are missing study specific annotation (if the cell is malignant or not, what is a stage of cancer, what kind of cell type)) \
-Scripts: \
-python/HEST.ipynb to download data from HEST database \
-python/h5ad_to_counts.ipynb to save the data in format that can be loaded by Scevan \
+Significance: Combining spatial  transcriptomics, pseudotime and machine learning provides an effective approach to find biomarkers for prostate cancer
 
-
-
-2)	We use scevan (https://www.nature.com/articles/s41467-023-36790-9) to find out which spots are normal and which are malignant. In the latter case, we cluster them based on the CNV profile using the same method. 
-Scripts: \
-R/scevan.R to load data saved in python/h5ad_to_counts.ipynb and run scevan  \
-
- 
-3)	We use stlearn (https://www.nature.com/articles/s41467-023-43120-6) to compute the pseudotime trajectories from normal spots, through different stages (CNV clusters) of cancer, to the most malignant spots and we find the genes that are the most associated with these trajectories.
- 
-
-4)	We use gseapy (https://academic.oup.com/bioinformatics/article/39/1/btac757/6847088) to infer biological mechanisms based on the 
- 
-
-5)	The next steps would be to do this on multiple datasets, find some shared biological mechanisms and try to validate it in other datasets.
-
-
-
-
-
-
-
-
-# Old strategy:
-
-
-# Spatial_cell_cell_communication in Cancers - The mighty gang
-
-Try to identify the CCC change in cancer spatial transcriptomic data. First, try two methods in the lung cancer data (Delineating the dynamic evolution from preneoplasia to invasive lung adenocarcinoma by integrating single-cell RNA sequencing and spatial transcriptomics https://www.nature.com/articles/s12276-022-00896-9#Sec2):
-
-Scrabian - Comparative analysis of cell–cell communication at single-cell resolution(https://www.nature.com/articles/s41587-023-01782-z). Designed for scRNA - Martin has the code run nicely, this one might move quicker
-COMMOT - Screening cell–cell communication in spatial transcriptomics via collective optimal transport (https://www.nature.com/articles/s41592-022-01728-4)
-Ideally, we would like have it as a quick project. Find something in the lung cancer paper using the CCC method, then replicate it in multiple different cancer ST datasets
-
-=================== 
-
-Below is Mikael's theory: Here, we hypothesized that the same principle would apply to premalignant cells. We constructed a spatially resolved network of all cells in a tumour. In this network each cell got a number depicting how many cells of the same type were in its vicinity. In other words, a central premalignant cell in a large cluster of premalignant cells got a high number, while a central premalignant cell in a small cluster got a medium number. A single premalignant cell surrounded by stroma and immune cell got a low number. We found that premalignant cells with high numbers were more homogenous and similar to malignant cells than those with low numbers. The high number cells only had stimulatory interactions, while low number cells had multiple mixed interactions. We ranked the stimulatory interactions and their URs. We showed that the top-scoring URs were associated with survival in TCGA, CPTAC and UKBB. Blocking a top UR killed premalignant clusters and tumor development in mice. In summary, the street gang principle applies to premalignant cells: Those with many similar cells in the vicinity successfully outcompete other premalignant cells and become malignant because of friendly support from its neighbours.
+![Overview figure.](Figure1_v4.png)
