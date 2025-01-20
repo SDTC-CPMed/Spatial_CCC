@@ -7,4 +7,4 @@ Using machine learning we demonstrated that prediction models based on the prote
 
 Significance: Combining spatial  transcriptomics, pseudotime and machine learning provides an effective approach to find biomarkers for prostate cancer
 
-![Overview figure.](Figure1_v4.png)
+![Overview figure.](Figure1_v5.png)
