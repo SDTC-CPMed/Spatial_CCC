@@ -31,7 +31,7 @@ run_one_copykat <- function(test_number,
                             sample_slices_vector = c('MEND160'),
                             path = "/home/dandia/Documents/DATA/", 
                             copykat_distance = "euclidean", # "euclidean" # "pearson" # "spearman"
-                            reference_option = "None",
+                            reference_option = "None", # "None" # "Normal" # "GG4" # "path"
                             reference_path = "",
                             rdata_file_name = "",
                             adata_option = "epi",
@@ -131,7 +131,7 @@ run_one_copykat <- function(test_number,
       t_adata <- as.matrix(raw_counts)
       
     }else if(adata_option == "seNoStroma"){
-      if(sample_slices_vector %in% c("MEND156","MEND158","MEND160")){ # These files had a different structure
+      if(sample_slices_vector %in% c("MEND156","MEND158","MEND160")){
         raw_counts <- se@assays$Spatial@counts
         t_adata <- as.matrix(raw_counts)
       }else{
@@ -140,9 +140,13 @@ run_one_copykat <- function(test_number,
         colnames(t_adata) <- se@meta.data$Barcode
         rownames(t_adata) <- se@assays$FeaturesNames
       }
+      # raw_counts <- se@assays$Spatial@counts
+      # If you want to convert it to a regular matrix
+      # t_adata <- as.matrix(raw_counts)
+      
       t_adata <- t_adata[, se@meta.data$Label %in% c('Benign', 'PIN', 'GG1', 'GG2', 'GG3', 'GG4','GG4cribriform',
                                                      'GG4 Cribriform', 'PIN', 'Transition_State')]
-    }else if (adata_option == "seLayers"){
+    }else if (adata_option == "seLayers"){ #H1_2 #H2_2 and the non Joakim's RData
       raw_counts <- se@assays$Spatial@layers$counts
       # If you want to convert it to a regular matrix
       t_adata <- as.matrix(raw_counts)
@@ -232,6 +236,8 @@ run_one_copykat <- function(test_number,
           }
         }
         
+        #write.csv(CNVsData, paste(sample_slice, '_', beta, '_CNV_CopyKatWithRef',test_number,'.csv', sep = ''))
+        #write.csv(df_order, paste(sample_slice, '_', beta, '_CNV_OrderClusters',test_number,'.csv', sep = ''))
         write.csv(CNVsData, paste(strsplit(rdata_file_name,".",fixed=TRUE)[[1]][1], '_', beta, '_CNV_NewAnnotations',test_number,'.csv', sep = ''))
         write.csv(df_order, paste(strsplit(rdata_file_name,".",fixed=TRUE)[[1]][1], '_', beta, '_CNV_OrderNewAnnotations',test_number,'.csv', sep = ''))
       })
@@ -254,14 +260,14 @@ library(tidyr)
 library(ggplot2)
 library(Seurat)
 
-# Example of how to run copykat with parameter selection that we chose
-run_one_copykat(test_number = 26,
+# Running copykat
+run_one_copykat(test_number = 27,
                 different_folder = FALSE,
-                sample_slices_vector = c('TENX46'),
+                sample_slices_vector = c('MEND147'),
                 ngene_perchr = 5,
                 copykat_distance = "pearson",
                 reference_option = "allBenignRdata",
-                rdata_file_name = "TENX46_annotated2.rdata",
+                rdata_file_name = "MEND147_annotated2.rdata",
                 adata_option = "seNoStroma",
                 copykat_lowdr = 0.08,
                 subClusters = 6)
