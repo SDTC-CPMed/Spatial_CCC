@@ -8,6 +8,7 @@ test_numbers = c('INT25' = "22",
                  'INT28' = "24",
                  'TENX40' = "25",
                  'TENX46' = "26",
+                 'MEND147' = "27",
                  'MEND151' = "19",
                  'MEND156' = "17",
                  'MEND158' = "18",
@@ -15,7 +16,8 @@ test_numbers = c('INT25' = "22",
                  'MEND161' = "20")
 
 data_path = 'C:/Users/dandia/OneDrive - Karolinska Institutet/Documents/Github/Spatial_CCC/DATA/'
-samples = c('INT25','INT26','INT27','INT28','TENX40','TENX46','MEND151','MEND156','MEND158','MEND160','MEND161')
+samples = c('INT25','INT26','INT27','INT28','TENX40','TENX46','MEND147','MEND151','MEND156','MEND158','MEND160','MEND161')
+
 for(sample in samples){
   test_number = test_numbers[sample]
 
@@ -55,9 +57,11 @@ for(sample in samples){
   labels_orig = result[["Label_orig"]]
   labels_orig[labels_orig == ""] = NA
   label_colors_5 <- c('Benign' = "blue", 
+                      'PIN' = 'gold',
                       'GG1' = "peachpuff", 
                       'GG2' = "#FF6666", 
                       'GG3' = "red", 
+                      'GG4' = 'darkred',
                       'GG4 Cribriform' = "purple")
   
   colors_5 <- label_colors_5[labels_orig]
